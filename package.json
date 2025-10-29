@@ -2,10 +2,10 @@
     "name": "country-api",
     "version": "1.0.0",
     "description": "RESTful API for country data",
-    "main": "index.js",
+    "main": "server.js",
     "scripts": {
-        "start": "node index.js",
-        "dev": "nodemon index.js"
+        "start": "node server.js",
+        "dev": "nodemon server.js"
     },
     "keywords": [],
     "author": "Callum Trace",
