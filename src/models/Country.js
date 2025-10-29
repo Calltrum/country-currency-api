@@ -6,16 +6,17 @@ class Country {
       INSERT INTO countries 
         (name, capital, region, population, currency_code, exchange_rate, 
          estimated_gdp, flag_url, last_refreshed_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE
-        capital = VALUES(capital),
-        region = VALUES(region),
-        population = VALUES(population),
-        currency_code = VALUES(currency_code),
-        exchange_rate = VALUES(exchange_rate),
-        estimated_gdp = VALUES(estimated_gdp),
-        flag_url = VALUES(flag_url),
-        last_refreshed_at = VALUES(last_refreshed_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      ON CONFLICT (name) 
+      DO UPDATE SET
+        capital = EXCLUDED.capital,
+        region = EXCLUDED.region,
+        population = EXCLUDED.population,
+        currency_code = EXCLUDED.currency_code,
+        exchange_rate = EXCLUDED.exchange_rate,
+        estimated_gdp = EXCLUDED.estimated_gdp,
+        flag_url = EXCLUDED.flag_url,
+        last_refreshed_at = EXCLUDED.last_refreshed_at
     `;
 
         const values = [
@@ -30,24 +31,26 @@ class Country {
             countryData.last_refreshed_at
         ];
 
-        const [result] = await pool.execute(query, values);
+        const result = await pool.query(query, values);
         return result;
     }
 
     static async findAll(filters = {}) {
         let query = 'SELECT * FROM countries WHERE 1=1';
         const params = [];
+        let paramIndex = 1;
 
         if (filters.region) {
-            query += ' AND region = ?';
+            query += ` AND region = $${paramIndex}`;
             params.push(filters.region);
+            paramIndex++;
         }
 
         if (filters.currency) {
-            query += ' AND currency_code = ?';
+            query += ` AND currency_code = $${paramIndex}`;
             params.push(filters.currency);
+            paramIndex++;
         }
-
 
         if (filters.sort === 'gdp_desc') {
             query += ' ORDER BY estimated_gdp DESC';
@@ -57,32 +60,32 @@ class Country {
             query += ' ORDER BY name ASC';
         }
 
-        const [rows] = await pool.execute(query, params);
-        return rows;
+        const result = await pool.query(query, params);
+        return result.rows;
     }
 
     static async findByName(name) {
-        const query = 'SELECT * FROM countries WHERE LOWER(name) = LOWER(?)';
-        const [rows] = await pool.execute(query, [name]);
-        return rows[0];
+        const query = 'SELECT * FROM countries WHERE LOWER(name) = LOWER($1)';
+        const result = await pool.query(query, [name]);
+        return result.rows[0];
     }
 
     static async deleteByName(name) {
-        const query = 'DELETE FROM countries WHERE LOWER(name) = LOWER(?)';
-        const [result] = await pool.execute(query, [name]);
-        return result.affectedRows > 0;
+        const query = 'DELETE FROM countries WHERE LOWER(name) = LOWER($1)';
+        const result = await pool.query(query, [name]);
+        return result.rowCount > 0;
     }
 
     static async count() {
         const query = 'SELECT COUNT(*) as total FROM countries';
-        const [rows] = await pool.execute(query);
-        return rows[0].total;
+        const result = await pool.query(query);
+        return parseInt(result.rows[0].total);
     }
 
     static async getLastRefreshTime() {
         const query = 'SELECT MAX(last_refreshed_at) as last_refresh FROM countries';
-        const [rows] = await pool.execute(query);
-        return rows[0].last_refresh;
+        const result = await pool.query(query);
+        return result.rows[0].last_refresh;
     }
 
     static async getTopByGDP(limit = 5) {
@@ -91,10 +94,10 @@ class Country {
       FROM countries 
       WHERE estimated_gdp IS NOT NULL
       ORDER BY estimated_gdp DESC 
-      LIMIT ?
+      LIMIT $1
     `;
-        const [rows] = await pool.execute(query, [limit]);
-        return rows;
+        const result = await pool.query(query, [limit]);
+        return result.rows;
     }
 }
 

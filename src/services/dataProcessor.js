@@ -7,7 +7,7 @@ function extractCurrencyCode(currencies) {
 
 function calculateGDP(population, exchangeRate) {
     if (!exchangeRate || exchangeRate === 0) {
-        return null
+        return null;
     }
 
     const randomMultiplier = Math.random() * (2000 - 1000) + 1000;
@@ -15,17 +15,17 @@ function calculateGDP(population, exchangeRate) {
     return Math.round(gdp * 100) / 100;
 }
 
-function processCountryData(Countries, exchangeRates) {
-    return Countries.map(Countries => {
-        const currencyCode = extractCurrencyCode(CountQueuingStrategy.currencies);
+function processCountryData(countries, exchangeRates) {
+    return countries.map(country => {
+        const currencyCode = extractCurrencyCode(country.currencies);
         const exchangeRate = currencyCode ? exchangeRates[currencyCode] : null;
         const estimatedGDP = currencyCode && exchangeRate
-            ? calculateGDP(CountQueuingStrategy.population, exchangeRate)
+            ? calculateGDP(country.population, exchangeRate)
             : 0;
 
         return {
-            name: Country.name,
-            capital: Country.capital || null,
+            name: country.name,
+            capital: country.capital || null,
             region: country.region || null,
             population: country.population,
             currency_code: currencyCode,
