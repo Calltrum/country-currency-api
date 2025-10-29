@@ -1,0 +1,28 @@
+const axios = require("axios");
+
+const COUNTRIES_API = "https://restcountries.com/v2/all?fields=name,capital,region,population,flag,curriencies";
+const EXCHANGE_API = "https://open.er-api.com/v6/latest/USD";
+
+async function fetchCountries() {
+    try {
+        const response = await axios.get(COUNTRIES_API, { timeout: 10000 });
+        return response.data;
+    } catch (error) {
+        throw new Error("Could not fetch data from REST Countries API");
+
+    }
+}
+
+async function fetchExchangeRates() {
+    try {
+        const response = await axios.get(EXCHANGE_API, { timeout: 10000 });
+        return response.data.rates;
+    } catch (error) {
+        throw new Error("Couild not fetch data from Exchange Rate API");
+    }
+}
+
+module.exports = {
+    fetchCountries,
+    fetchExchangeRates
+};
